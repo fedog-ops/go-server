@@ -1,0 +1,32 @@
+trigger:
+- main  # Define the branch to trigger the pipeline
+
+resources:
+- repo: self
+
+variables:
+  dockerRegistryServiceConnection: 'Docker ACR'
+  imageRepository: 'atari/felix-go-server'
+  containerRegistry: 'acrbjssacademy.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: 'Build and push Docker image'
+  jobs:
+  - job: Build
+    displayName: 'Build'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      displayName: 'Build and push'
+    - task: Docker@2
+      inputs:
+        command: 'buildAndPush'
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
